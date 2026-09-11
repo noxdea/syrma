@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en" class="bg-slate-950">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#020617">
+    <meta name="description" content="Syrma drives and asserts Zaniah GUI and TUI applications from Ruby tests.">
+    <meta property="og:title" content="Syrma — UI testing for Zaniah">
+    <meta property="og:description" content="Drive real input paths, inspect rendered output, and keep GUI and TUI tests deterministic.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://noxdea.github.io/syrma/">
+    <meta name="twitter:card" content="summary">
+    <link rel="canonical" href="https://noxdea.github.io/syrma/">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/site.css">
+    <title>Syrma — UI testing for Zaniah</title>
+  </head>
+  <body class="min-h-dvh bg-slate-950 font-sans text-slate-100 antialiased">
+    <a href="#main" class="sr-only z-50 rounded-md bg-amber-400 px-4 py-2 font-medium text-slate-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
+
+    <header class="border-b border-slate-800">
+      <nav aria-label="Primary" class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
+        <a href="./" class="flex items-center gap-3 rounded-sm font-semibold text-slate-100 outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950">
+          <span aria-hidden="true" class="grid size-8 place-items-center border border-amber-400 font-mono text-sm text-amber-400">S</span>
+          <span>Syrma</span>
+        </a>
+        <div class="flex items-center gap-5 text-sm text-slate-300">
+          <a href="#capabilities" class="hidden rounded-sm outline-none hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-amber-400 sm:block">Capabilities</a>
+          <a href="https://github.com/noxdea/syrma" class="rounded-md border border-slate-700 px-4 py-2 font-medium text-slate-100 outline-none hover:border-slate-500 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950">View on GitHub</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="mx-auto grid max-w-7xl gap-16 px-6 py-20 sm:py-28 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8 lg:py-32">
+        <div class="min-w-0">
+          <p class="mb-6 font-mono text-sm text-amber-400">Ruby testing for Zaniah</p>
+          <h1 class="max-w-3xl text-balance text-5xl font-semibold leading-none text-slate-50 sm:text-7xl">
+            Drive the interface. Assert what users see.
+          </h1>
+          <p class="mt-8 max-w-2xl text-pretty text-lg leading-8 text-slate-300">
+            Syrma locates rendered elements, sends input through Zaniah’s real event path, waits for redraws, and compares the result—from text and trees to pixels and screenshots.
+          </p>
+          <div class="mt-10 flex flex-wrap gap-4">
+            <a href="#install" class="rounded-md bg-amber-400 px-5 py-3 font-medium text-slate-950 outline-none hover:bg-amber-300 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950">Write your first test</a>
+            <a href="https://github.com/noxdea/syrma/blob/main/docs/guide.md" class="rounded-md px-5 py-3 font-medium text-slate-200 outline-none ring-1 ring-inset ring-slate-700 hover:ring-slate-500 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950">Read the guide</a>
+          </div>
+        </div>
+
+        <figure class="min-w-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-2xl shadow-black/30">
+          <figcaption class="flex items-center justify-between border-b border-slate-700 px-5 py-4 font-mono text-xs text-slate-400">
+            <span>test/save_test.rb</span>
+            <span>headless session</span>
+          </figcaption>
+          <pre class="overflow-x-auto p-5 font-mono text-sm leading-7 text-slate-300 sm:p-7"><code><span class="text-slate-500"># Mount the real interface</span>
+zaniah_session(width: <span class="text-amber-400">480</span>, height: <span class="text-amber-400">320</span>) do |window|
+  Editor.mount(window)
+end
+
+ui.test_id(<span class="text-amber-400">"document"</span>).type(<span class="text-amber-400">"Hello"</span>)
+ui.button(<span class="text-amber-400">"Save"</span>).click
+
+assert_ui_text <span class="text-amber-400">"Saved"</span>
+assert_tree_snapshot <span class="text-amber-400">"editor"</span></code></pre>
+          <div class="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-t border-slate-700 bg-slate-950/70 px-5 py-4 font-mono text-xs">
+            <span aria-hidden="true" class="size-2 rounded-full bg-amber-400">&#8203;</span>
+            <span class="text-slate-200">Passed</span>
+            <span class="tabular-nums text-slate-500">12 ms</span>
+          </div>
+        </figure>
+      </section>
+
+      <section aria-labelledby="path-title" class="border-y border-slate-800 bg-slate-900/40">
+        <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+          <div class="max-w-2xl">
+            <h2 id="path-title" class="text-balance text-3xl font-semibold text-slate-50 sm:text-4xl">A test follows the same path as a user.</h2>
+            <p class="mt-4 text-pretty leading-7 text-slate-400">No private callbacks. No skipped frames. The assertion begins with the rendered interface and ends with its observable output.</p>
+          </div>
+          <ol class="mt-12 grid border-l border-slate-700 sm:grid-cols-2 sm:border-l-0 lg:grid-cols-4 lg:border-t">
+            <li class="relative px-6 py-5 sm:border-l sm:border-slate-700 lg:pt-8">
+              <span aria-hidden="true" class="absolute -left-1 top-7 size-2 rounded-full bg-amber-400 sm:-left-1 sm:top-7 lg:-top-1">&#8203;</span>
+              <p class="font-medium text-slate-100">Locate</p>
+              <p class="mt-2 text-pretty text-sm leading-6 text-slate-400">Resolve text, role, test ID, or a nested query against the latest frame.</p>
+            </li>
+            <li class="relative px-6 py-5 sm:border-l sm:border-slate-700 lg:pt-8">
+              <span aria-hidden="true" class="absolute -left-1 top-7 size-2 rounded-full bg-amber-400 sm:-left-1 sm:top-7 lg:-top-1">&#8203;</span>
+              <p class="font-medium text-slate-100">Act</p>
+              <p class="mt-2 text-pretty text-sm leading-6 text-slate-400">Click, type, drag, scroll, paste, or compose through <code class="font-mono text-slate-300">Window#input</code>.</p>
+            </li>
+            <li class="relative px-6 py-5 sm:border-l sm:border-slate-700 lg:pt-8">
+              <span aria-hidden="true" class="absolute -left-1 top-7 size-2 rounded-full bg-amber-400 sm:-left-1 sm:top-7 lg:-top-1">&#8203;</span>
+              <p class="font-medium text-slate-100">Settle</p>
+              <p class="mt-2 text-pretty text-sm leading-6 text-slate-400">Wait for redraws and advance a session-scoped virtual clock when timing matters.</p>
+            </li>
+            <li class="relative px-6 py-5 sm:border-l sm:border-slate-700 lg:pt-8">
+              <span aria-hidden="true" class="absolute -left-1 top-7 size-2 rounded-full bg-amber-400 sm:-left-1 sm:top-7 lg:-top-1">&#8203;</span>
+              <p class="font-medium text-slate-100">Inspect</p>
+              <p class="mt-2 text-pretty text-sm leading-6 text-slate-400">Assert text, trees, terminal output, pixels, screenshots, menus, and tooltips.</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="capabilities" aria-labelledby="capabilities-title" class="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
+        <div class="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+          <div>
+            <h2 id="capabilities-title" class="text-balance text-3xl font-semibold text-slate-50 sm:text-4xl">Observe the whole surface.</h2>
+            <p class="mt-5 max-w-lg text-pretty leading-7 text-slate-400">Start with semantic assertions. Reach for snapshots and pixels only when the visual result is the behavior under test.</p>
+          </div>
+          <ul class="divide-y divide-slate-800 border-y border-slate-800">
+            <li class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr]">
+              <h3 class="font-medium text-slate-100">Structure</h3>
+              <p class="text-pretty leading-7 text-slate-400">Rendered text, element trees, visibility, clickability, and backgrounds.</p>
+            </li>
+            <li class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr]">
+              <h3 class="font-medium text-slate-100">Interaction</h3>
+              <p class="text-pretty leading-7 text-slate-400">Pointer, keyboard, IME composition, clipboard, file drop, scroll, and resize.</p>
+            </li>
+            <li class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr]">
+              <h3 class="font-medium text-slate-100">Visuals</h3>
+              <p class="text-pretty leading-7 text-slate-400">Deterministic text rendering, pixel checks, regions, masks, and image snapshots.</p>
+            </li>
+            <li class="grid gap-2 py-6 sm:grid-cols-[10rem_1fr]">
+              <h3 class="font-medium text-slate-100">Diagnostics</h3>
+              <p class="text-pretty leading-7 text-slate-400">Screenshots, hit regions, text runs, recent events, and a focused failure summary.</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="install" aria-labelledby="install-title" class="border-y border-slate-800 bg-slate-900/40">
+        <div class="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[0.75fr_1.25fr] lg:px-8 lg:py-24">
+          <div>
+            <h2 id="install-title" class="text-balance text-3xl font-semibold text-slate-50 sm:text-4xl">Start with one test.</h2>
+            <p class="mt-5 max-w-lg text-pretty leading-7 text-slate-400">Add Syrma beside your test framework, mount the same UI your application runs, then interact with it.</p>
+            <a href="https://rubygems.org/gems/syrma" class="mt-7 inline-block rounded-sm font-medium text-amber-400 outline-none hover:text-amber-300 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950">View the gem on RubyGems</a>
+          </div>
+          <div class="overflow-hidden rounded-lg border border-slate-700 bg-slate-950">
+            <div class="border-b border-slate-700 px-5 py-3 font-mono text-xs text-slate-500">Gemfile</div>
+            <pre class="overflow-x-auto p-5 font-mono text-sm leading-7 text-slate-300 sm:p-7"><code>group <span class="text-amber-400">:test</span> do
+  gem <span class="text-amber-400">"minitest"</span>, <span class="text-amber-400">"~&gt; 5.0"</span>
+  gem <span class="text-amber-400">"syrma"</span>
+end</code></pre>
+            <div class="border-t border-slate-700 px-5 py-4 font-mono text-sm text-slate-400">$ bundle install &amp;&amp; bundle exec syrma doctor</div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="ci-title" class="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
+        <div class="grid gap-10 border-l-2 border-amber-400 pl-7 sm:pl-10 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+          <div>
+            <h2 id="ci-title" class="text-balance text-3xl font-semibold text-slate-50 sm:text-4xl">Failures leave evidence.</h2>
+            <p class="mt-5 max-w-2xl text-pretty leading-7 text-slate-400">When a UI test fails, Syrma writes the frame, element tree, hit regions, text runs, and recent events below <code class="font-mono text-slate-300">tmp/syrma</code>. Missing snapshot goldens fail on CI instead of being accepted silently.</p>
+          </div>
+          <div class="font-mono text-sm text-slate-400 lg:text-right">
+            <p>Ruby 3.1+</p>
+            <p class="mt-2">Minitest and RSpec</p>
+            <p class="mt-2">Zaniah ~&gt; 0.2.0</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="border-t border-slate-800">
+        <div class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-6 py-16 sm:flex-row sm:items-center lg:px-8">
+          <div>
+            <h2 class="text-balance text-2xl font-semibold text-slate-50">Test the interface you ship.</h2>
+            <p class="mt-3 text-pretty text-slate-400">Syrma is open source under the MIT License.</p>
+          </div>
+          <a href="https://github.com/noxdea/syrma" class="rounded-md bg-amber-400 px-5 py-3 font-medium text-slate-950 outline-none hover:bg-amber-300 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950">Explore Syrma on GitHub</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-slate-800">
+      <div class="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+        <p>Syrma. UI testing for Zaniah.</p>
+        <p>Built for Ruby applications.</p>
+      </div>
+    </footer>
+  </body>
+</html>
