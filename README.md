@@ -1,13 +1,24 @@
-# Syrma
+<h1 align="center">Syrma</h1>
 
-Drive and assert [Zaniah](https://github.com/noxdea/zaniah) GUI and TUI applications from Ruby tests.
+<p align="center">
+  <strong>Drive and assert <a href="https://github.com/noxdea/zaniah">Zaniah</a> GUI and TUI applications from Ruby tests.</strong>
+</p>
 
-[![Gem version](https://img.shields.io/gem/v/syrma.svg)](https://rubygems.org/gems/syrma)
-[![CI](https://github.com/noxdea/syrma/actions/workflows/main.yml/badge.svg)](https://github.com/noxdea/syrma/actions/workflows/main.yml)
-[![Ruby 3.1+](https://img.shields.io/badge/ruby-3.1%2B-CC342D.svg)](https://www.ruby-lang.org/)
-[![MIT License](https://img.shields.io/github/license/noxdea/syrma.svg)](LICENSE.txt)
+<p align="center">
+  <a href="https://rubygems.org/gems/syrma"><img src="https://img.shields.io/gem/v/syrma.svg" alt="Gem version"></a>
+  <a href="https://github.com/noxdea/syrma/actions/workflows/main.yml"><img src="https://github.com/noxdea/syrma/actions/workflows/main.yml/badge.svg" alt="CI"></a>
+  <a href="https://www.ruby-lang.org/"><img src="https://img.shields.io/badge/ruby-3.1%2B-CC342D.svg" alt="Ruby 3.1+"></a>
+  <a href="LICENSE.txt"><img src="https://img.shields.io/github/license/noxdea/syrma.svg" alt="MIT License"></a>
+</p>
 
-[Website](https://noxdea.github.io/syrma/) · [Features](#features) · [Installation](#installation) · [Quick start](#quick-start) · [Snapshots](#snapshots-and-diagnostics) · [Documentation](#documentation)
+<p align="center">
+  <a href="https://noxdea.github.io/syrma/">Website</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#installation">Installation</a> ·
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#snapshots-and-diagnostics">Snapshots</a> ·
+  <a href="#documentation">Documentation</a>
+</p>
 
 ---
 
