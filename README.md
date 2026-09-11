@@ -1,10 +1,30 @@
 # Syrma
 
-Syrma drives [Zaniah](https://github.com/noxdea/zaniah) GUI and TUI applications from Ruby tests. It locates rendered elements, sends input through Zaniah's real event path, waits for redraws, and compares text, trees, terminal output, pixels, and screenshots.
+Drive and assert [Zaniah](https://github.com/noxdea/zaniah) GUI and TUI applications from Ruby tests.
+
+[![Gem version](https://img.shields.io/gem/v/syrma.svg)](https://rubygems.org/gems/syrma)
+[![CI](https://github.com/noxdea/syrma/actions/workflows/main.yml/badge.svg)](https://github.com/noxdea/syrma/actions/workflows/main.yml)
+[![Ruby 3.1+](https://img.shields.io/badge/ruby-3.1%2B-CC342D.svg)](https://www.ruby-lang.org/)
+[![MIT License](https://img.shields.io/github/license/noxdea/syrma.svg)](LICENSE.txt)
+
+[Website](https://noxdea.github.io/syrma/) · [Features](#features) · [Installation](#installation) · [Quick start](#quick-start) · [Snapshots](#snapshots-and-diagnostics) · [Documentation](#documentation)
+
+---
+
+Syrma locates rendered elements, sends input through Zaniah's real event path, waits for redraws, and compares the observable result. Tests can inspect text, element trees, terminal output, pixels, screenshots, menus, and tooltips without bypassing application input handling.
+
+## Features
+
+- Drive GUI and TUI sessions with pointer, keyboard, clipboard, composition, file-drop, resize, and terminal input
+- Locate elements by text, test ID, actionability, or nested queries resolved against the latest frame
+- Assert semantic output first, with tree, terminal, pixel, and screenshot snapshots when needed
+- Keep timing deterministic with a session-scoped virtual clock and explicit frame settling
+- Test with Minitest assertions or RSpec matchers
+- Capture screenshots, hit regions, text runs, and recent events when a test fails
 
 ## Installation
 
-Add Syrma to the test group in your `Gemfile`:
+Add Syrma and your test framework to the test group in your `Gemfile`:
 
 ```ruby
 group :test do
@@ -13,11 +33,18 @@ group :test do
 end
 ```
 
-Then run `bundle install` and `bundle exec syrma doctor`.
+Then install the bundle and verify the test environment:
 
-## Minimal test
+```sh
+bundle install
+bundle exec syrma doctor
+```
 
-Keep window creation separate from the code that mounts your UI:
+Syrma requires Ruby 3.1 or later and installs Zaniah `~> 0.2.0` as a dependency. RSpec users can replace Minitest with RSpec in the test group.
+
+## Quick start
+
+Keep window creation separate from the code that mounts the interface:
 
 ```ruby
 module Counter
@@ -32,6 +59,8 @@ module Counter
 end
 ```
 
+### Minitest
+
 ```ruby
 require "syrma/minitest"
 
@@ -43,8 +72,23 @@ class CounterTest < Minitest::Test
   end
 
   def test_increment
-    ui.find(test_id: "increment").click
+    ui.test_id("increment").click
     assert_ui_text "Count: 1"
+  end
+end
+```
+
+### RSpec
+
+```ruby
+require "syrma/rspec"
+
+RSpec.describe "Counter", type: :zaniah do
+  before { zaniah_session(width: 320, height: 200) { |window| Counter.mount(window) } }
+
+  it "increments the count" do
+    ui.test_id("increment").click
+    expect(ui).to have_ui_text("Count: 1")
   end
 end
 ```
@@ -61,7 +105,7 @@ end
 | Window/input | `resize`, `close`, `drop_files`, `feed_terminal` |
 | Synchronize | `settle`, `wait_for`, `advance` |
 | Inspect | `tree`, `texts`, `at`, `pixel`, `screenshot`, `terminal_lines`, `menu`, `tooltip` |
-| Assert | text, element, visibility, clickability, background, pixel, tooltip, menu, tree/terminal/image snapshots |
+| Assert | Text, element, visibility, clickability, background, pixel, tooltip, menu, tree/terminal/image snapshots |
 
 Locators are lazy: every operation resolves them against the latest rendered frame. Actions wait for visibility and an unobscured matching event handler, then send events through `Window#input`.
 
@@ -81,24 +125,31 @@ bundle exec syrma snapshots prune --dry-run
 bundle exec syrma report
 ```
 
-## Determinism and speed
+## Determinism and performance
 
 The default text renderer uses only Zaniah's bundled Abel font plus files passed in `fonts:`. Add a repository-owned font for non-Latin screenshot tests. `text: :none` is faster but does not draw glyphs.
 
 On Ruby 4.0 arm64 macOS, the included 101-element benchmark measured `event_frames: :gesture` at 3.1 ms per click/check with `text: :none` and 7.9 ms with deterministic text; Syrma's tree build plus locator resolution was about 0.28 ms. Run `bundle exec ruby -Ilib bench/click_bench.rb gesture` on the target CI host for relevant numbers.
 
-See [the guide](docs/guide.md) and [recipes](docs/recipes.md) for the full workflow.
+## Documentation
+
+- [Guide](docs/guide.md): application structure, sessions, CI, configuration, and troubleshooting
+- [Recipes](docs/recipes.md): interactions, screenshots, TUI sessions, and multiple windows
+- [Changelog](CHANGELOG.md): release history
 
 ## Development
 
 ```sh
+bundle install
 bundle exec rake
 bundle exec ruby -Ilib:test script/test_gesture.rb
 bundle exec rbs -I sig validate
 gem build --strict syrma.gemspec
 ```
 
-Syrma supports Ruby 3.1+ and Zaniah `~> 0.2.0`. Virtual time is scoped to each session.
+## Contributing
+
+Bug reports and pull requests are welcome on [GitHub](https://github.com/noxdea/syrma).
 
 ## License
 
