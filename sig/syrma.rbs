@@ -1,0 +1,266 @@
+module Syrma
+  VERSION: String
+
+  def self.configuration: () -> Configuration
+  def self.configuration=: (Configuration) -> Configuration
+  def self.configure: () { (Configuration) -> untyped } -> untyped
+  def self.reset_configuration!: () -> Configuration
+
+  class Configuration
+    attr_accessor timeout: Float
+    attr_accessor strict: bool
+    attr_accessor event_frames: Symbol
+    attr_accessor text: untyped
+    attr_accessor fonts: Array[String]
+    attr_accessor snapshot_dir: String
+    attr_accessor artifacts_dir: String
+    def initialize: () -> void
+  end
+
+  class Clock
+    def self.real_now: () -> Float
+    def initialize: () -> void
+    def call: () -> Float
+    def advance: (Numeric seconds) -> Float
+  end
+
+  class Error < StandardError
+  end
+  class UnstableUI < Error
+  end
+  class WaitTimeout < Error
+  end
+  class SnapshotMissing < Error
+  end
+  class SnapshotMismatch < Error
+  end
+  class UnsupportedBackend < Error
+  end
+  class ElementNotFound < Error
+    def initialize: (untyped locator, Tree tree) -> void
+  end
+  class AmbiguousMatch < Error
+    def initialize: (untyped locator, Array[Node] nodes) -> void
+  end
+  class NotActionable < Error
+    attr_reader reason: Symbol
+    def initialize: (Symbol reason, String message) -> void
+  end
+
+  class Node
+    attr_reader path: Array[Integer]
+    attr_reader element: untyped
+    attr_reader type: Symbol
+    attr_reader test_id: String?
+    attr_reader key: untyped
+    attr_reader text: String?
+    attr_reader color: untyped
+    attr_reader font_size: Numeric?
+    attr_reader bounds: untyped
+    attr_reader visible_bounds: untyped
+    attr_reader background: untyped
+    attr_reader border_color: untyped
+    attr_reader radius: untyped
+    attr_reader handlers: Array[Symbol]
+    attr_reader tooltip: String?
+    attr_reader children: Array[Node]
+    def visible?: () -> bool
+    def clickable?: () -> bool
+    def center: () -> untyped
+    def descendants: () -> Array[Node]
+    def content_text: () -> String
+    def ancestor_of?: (Node other) -> bool
+  end
+
+  class Tree
+    attr_reader frame: Integer
+    attr_reader size: untyped
+    attr_reader root: Node?
+    attr_reader nodes: Array[Node]
+    attr_reader hits: Array[untyped]
+    attr_reader text_runs: Array[untyped]
+    attr_reader menu: Array[String]?
+    attr_reader menu_index: Integer?
+    attr_reader tooltip: String?
+    def hit_at: (untyped point, ?event: Symbol, ?button: Symbol) -> Node?
+  end
+
+  class Criteria
+    def initialize: (Hash[Symbol, untyped] conditions, ?^(Node) -> bool predicate) -> void
+    def match?: (Node node) -> bool
+    def to_s: () -> String
+  end
+
+  class Locator
+    attr_reader driver: WindowDriver
+    attr_reader criteria: Criteria
+    attr_reader scope: Locator?
+    attr_reader index: Integer?
+    def find: (**untyped) ?{ (Node) -> bool } -> Locator
+    def nth: (Integer index) -> Locator
+    def first: () -> Locator
+    def last: () -> Locator
+    def candidates: (?Tree tree) -> Array[Node]
+    def resolve_all: (?Tree tree) -> Array[Node]
+    def resolve: (?Tree tree, ?strict: bool) -> Node
+    def count: () -> Integer
+    def exists?: () -> bool
+    def visible?: () -> bool
+    def text: () -> String
+    def click: (**untyped) -> untyped
+    def double_click: (**untyped) -> untyped
+    def hover: () -> untyped
+    def right_click: () -> untyped
+  end
+
+  class Event
+    attr_reader frame: Integer
+    attr_reader window: String
+    attr_reader input: untyped
+  end
+
+  class EventLog
+    include Enumerable[Event]
+    def initialize: (?limit: Integer) -> void
+    def each: () { (Event) -> void } -> untyped
+    def last: (?Integer count) -> (Event | Array[Event] | nil)
+    def add: (Integer frame, String window, untyped input) -> Event
+  end
+
+  class Session
+    attr_reader raster: Symbol
+    attr_reader strict: bool
+    attr_reader timeout: Float
+    attr_reader event_log: EventLog
+    attr_reader app: untyped
+    attr_reader event_frames: Symbol
+    attr_reader font_paths: Array[String]
+    attr_reader text_mode: untyped
+    attr_reader windows: Array[untyped]
+    attr_reader drivers: Array[WindowDriver]
+    def self.new: (**untyped) ?{ (untyped) -> untyped } -> Session
+    def self.attach: (untyped window, **untyped) -> Session
+    def self.for_app: (untyped app, **untyped) { (untyped) -> untyped } -> Session
+    def self.launch_script: (String path, ?argv: Array[String], **untyped) -> Session
+    def window: (?title: String?, ?index: Integer?) -> untyped
+    def driver: () -> WindowDriver
+    def session: () -> Session
+    def settle: () -> Session
+    def advance: (Numeric seconds) -> Session
+    def wait_for: (?untyped message, ?timeout: Numeric) { () -> untyped } -> untyped
+    def screenshot_pixels: (?WindowDriver target) -> String
+    def tui?: (?WindowDriver target) -> bool
+    def output_for: (?WindowDriver target) -> untyped
+    def exit_status: () -> Integer?
+    def close: () -> bool
+    def method_missing: (Symbol name, *untyped, **untyped) -> untyped
+  end
+
+  class WindowDriver
+    attr_reader window: untyped
+    attr_reader session: Session
+    def strict: () -> bool
+    def tree: () -> Tree
+    def find: (**untyped) ?{ (Node) -> bool } -> Locator
+    def all: (**untyped) ?{ (Node) -> bool } -> Array[Node]
+    def test_id: (String | Symbol id) -> Locator
+    def text: (String | Regexp value) -> Locator
+    def texts: () -> Array[String]
+    def tooltip: () -> String?
+    def button: (String label) -> Locator
+    def at: (untyped x, ?untyped y, ?event: Symbol, ?button: Symbol) -> Node?
+    def pixel: (Integer x, Integer y) -> Array[Integer]
+    def screenshot: (?String path) -> String
+    def terminal_lines: (?colors: bool) -> Array[String]
+    def click: (?untyped target, **untyped) -> untyped
+    def double_click: (untyped target, **untyped) -> untyped
+    def right_click: (untyped target, **untyped) -> untyped
+    def hover: (untyped target) -> untyped
+    def drag: (untyped from, untyped to, **untyped) -> untyped
+    def scroll: (untyped target, **untyped) -> untyped
+    def mouse_move: (untyped point, **untyped) -> untyped
+    def mouse_down: (untyped point, **untyped) -> untyped
+    def mouse_up: (untyped point, **untyped) -> untyped
+    def press: (*String keystrokes) -> untyped
+    def key_down: (String stroke, ?held: bool) -> untyped
+    def key_up: (String stroke) -> untyped
+    def type: (String text, ?key_events: bool) -> untyped
+    def paste: (String text) -> untyped
+    def compose: (String text, ?selection: untyped) -> untyped
+    def commit: (String text) -> untyped
+    def drop_files: (Array[String] paths, at: untyped) -> untyped
+    def resize: (Numeric width, Numeric height) -> untyped
+    def close: () -> untyped
+    def feed_terminal: (String bytes) -> untyped
+    def scroll_until: (untyped list, found: Hash[Symbol, untyped], ?step: Numeric, ?max: Integer) -> Locator
+    def menu: () -> PopupDriver
+  end
+
+  class PopupDriver
+    def open?: () -> bool
+    def items: () -> Array[String]
+    def selected: () -> String?
+    def dismiss: () -> untyped
+    def select: (String label, ?via: Symbol) -> untyped
+  end
+
+  class Comparator
+    class Result
+      attr_reader width: Integer
+      attr_reader height: Integer
+      attr_reader diff_pixels: Integer
+      attr_reader diff_image: String
+      def ratio: () -> Float
+    end
+    def initialize: (?threshold: Numeric) -> void
+    def compare: (Integer width, Integer height, String expected, String actual) -> Result
+  end
+
+  class Recorder
+    def initialize: (WindowDriver driver, IO output) -> void
+    def record: (untyped event) -> untyped
+    def close: () -> untyped
+  end
+
+  module EventCodec
+    def self.dump: (untyped event, t: Numeric, ?target: Hash[String, untyped]?) -> String
+    def self.load: (String line) -> untyped
+    def self.parse: (String line) -> Hash[String, untyped]
+  end
+
+  module Codegen
+    def self.generate: (Array[String] lines, ?framework: Symbol) -> String
+  end
+
+  module Report
+    def self.generate: (?root: String?, ?output: String?) -> String
+  end
+
+  class CLI
+    def self.run: (?Array[String] argv, ?out: IO, ?err: IO) -> Integer
+  end
+
+  class RakeTask
+    def initialize: () -> void
+  end
+
+  module Minitest
+    def zaniah_session: (**untyped) { (untyped) -> untyped } -> Session
+    def ui: () -> Session
+    def assert_ui_text: (String | Regexp expected, **untyped) -> bool
+    def refute_ui_text: (String | Regexp unexpected, **untyped) -> bool
+    def assert_element: (?untyped target, **untyped) -> bool
+    def refute_element: (?untyped target, **untyped) -> bool
+    def assert_visible: (?untyped target, **untyped) -> bool
+    def assert_hidden: (?untyped target, **untyped) -> bool
+    def assert_clickable: (?untyped target, **untyped) -> bool
+    def assert_bg: (untyped target, untyped color, **untyped) -> bool
+    def assert_pixel: (Integer x, Integer y, untyped color, **untyped) -> bool
+    def assert_tooltip: (String | Regexp expected, **untyped) -> bool
+    def assert_menu_items: (Array[String] labels, **untyped) -> bool
+    def assert_screenshot: (String name, **untyped) -> bool
+    def assert_tree_snapshot: (String name, **untyped) -> bool
+    def assert_terminal_snapshot: (String name, **untyped) -> bool
+    def assert_no_text_overlap: (**untyped) -> bool
+  end
+end
