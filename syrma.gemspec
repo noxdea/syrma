@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email = ["t.yudai92@gmail.com"]
   spec.summary = "UI testing toolkit for applications built with Zaniah"
   spec.description = "Drive Zaniah windows headlessly: locate elements, send real input events, and assert text, layout, pixels, and snapshots."
-  spec.homepage = "https://github.com/ydah/syrma"
+  spec.homepage = "https://github.com/noxdea/syrma"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.1"
   spec.metadata = {
