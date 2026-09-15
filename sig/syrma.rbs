@@ -258,6 +258,11 @@ module Syrma
     def assert_pixel: (Integer x, Integer y, untyped color, **untyped) -> bool
     def assert_tooltip: (String | Regexp expected, **untyped) -> bool
     def assert_menu_items: (Array[String] labels, **untyped) -> bool
+    def assert_panel_visible: (String | Symbol id, **untyped) -> bool
+    def assert_panel_badge: (String | Symbol id, untyped value, **untyped) -> bool
+    def assert_inline_overlay: (line: Integer, text: String | Regexp, **untyped) -> bool
+    def assert_gutter_marker: (line: Integer, kind: String | Symbol, **untyped) -> bool
+    def assert_line_highlight: (line: Integer, kind: String | Symbol, **untyped) -> bool
     def assert_screenshot: (String name, **untyped) -> bool
     def assert_tree_snapshot: (String name, **untyped) -> bool
     def assert_terminal_snapshot: (String name, **untyped) -> bool

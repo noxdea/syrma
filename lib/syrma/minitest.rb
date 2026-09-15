@@ -94,6 +94,35 @@ module Syrma
       end
     end
 
+    def assert_panel_visible(id, session: ui, timeout: session.timeout)
+      test_id = UIAssertions.panel_id(id)
+      assert_ui_instrumentation(session, timeout, test_id, "panel #{id.inspect} to be visible", "#{UIAssertions::PREFIX}:panel:")
+    end
+
+    def assert_panel_badge(id, value, session: ui, timeout: session.timeout)
+      test_id = UIAssertions.panel_id(id, badge: true)
+      assert_ui_instrumentation(session, timeout, test_id, "panel #{id.inspect} badge to be #{value.inspect}",
+                                "#{UIAssertions::PREFIX}:panel:", text: value)
+    end
+
+    def assert_inline_overlay(line:, text:, session: ui, timeout: session.timeout)
+      test_id = UIAssertions.decoration_id(:inline, line)
+      assert_ui_instrumentation(session, timeout, test_id, "inline overlay on line #{line} with text #{text.inspect}",
+                                "#{UIAssertions::PREFIX}:decoration:inline:", text: text)
+    end
+
+    def assert_gutter_marker(line:, kind:, session: ui, timeout: session.timeout)
+      test_id = UIAssertions.decoration_id(:gutter, line, kind)
+      assert_ui_instrumentation(session, timeout, test_id, "#{kind.inspect} gutter marker on line #{line}",
+                                "#{UIAssertions::PREFIX}:decoration:gutter:")
+    end
+
+    def assert_line_highlight(line:, kind:, session: ui, timeout: session.timeout)
+      test_id = UIAssertions.decoration_id(:line, line, kind)
+      assert_ui_instrumentation(session, timeout, test_id, "#{kind.inspect} line highlight on line #{line}",
+                                "#{UIAssertions::PREFIX}:decoration:line:")
+    end
+
     def assert_screenshot(name, session: ui, **options)
       warn "syrma: text: :none does not render text in images" if session.text_mode == :none
       store = Snapshots::Store.new
@@ -152,6 +181,13 @@ module Syrma
       pass
     rescue WaitTimeout => error
       flunk error.message
+    end
+
+    def assert_ui_instrumentation(session, timeout, test_id, expectation, prefix, text: UIAssertions::ANY_TEXT)
+      ui_eventually(session, timeout,
+                    -> { "Expected #{expectation}; observed #{UIAssertions.describe(session, prefix)}" }) do
+        UIAssertions.visible?(session, test_id, text: text)
+      end
     end
 
     def snapshot_path(store, name, extension)

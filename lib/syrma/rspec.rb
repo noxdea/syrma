@@ -102,6 +102,25 @@ module Syrma
       failure_message { |session| "Expected menu items #{labels.inspect} (current: #{session.menu.items.inspect})" }
     end
 
+    {
+      have_panel_visible: ->(id) { [UIAssertions.panel_id(id), UIAssertions::ANY_TEXT, "panel #{id.inspect} to be visible", "#{UIAssertions::PREFIX}:panel:"] },
+      have_panel_badge: ->(id, value) { [UIAssertions.panel_id(id, badge: true), value, "panel #{id.inspect} badge to be #{value.inspect}", "#{UIAssertions::PREFIX}:panel:"] },
+      have_inline_overlay: ->(line:, text:) { [UIAssertions.decoration_id(:inline, line), text, "inline overlay on line #{line} with text #{text.inspect}", "#{UIAssertions::PREFIX}:decoration:inline:"] },
+      have_gutter_marker: ->(line:, kind:) { [UIAssertions.decoration_id(:gutter, line, kind), UIAssertions::ANY_TEXT, "#{kind.inspect} gutter marker on line #{line}", "#{UIAssertions::PREFIX}:decoration:gutter:"] },
+      have_line_highlight: ->(line:, kind:) { [UIAssertions.decoration_id(:line, line, kind), UIAssertions::ANY_TEXT, "#{kind.inspect} line highlight on line #{line}", "#{UIAssertions::PREFIX}:decoration:line:"] }
+    }.each do |name, query|
+      ::RSpec::Matchers.define name do |*args, **keywords|
+        match do |session|
+          @test_id, @text, @expectation, @prefix = query.call(*args, **keywords)
+          @session = session
+          RSpec.eventually(session) { UIAssertions.visible?(session, @test_id, text: @text) }
+        end
+        failure_message do
+          "Expected #{@expectation}; observed #{UIAssertions.describe(@session, @prefix)}"
+        end
+      end
+    end
+
     ::RSpec::Matchers.define :match_screenshot do |name, **options|
       match do |session|
         store = Snapshots::Store.new

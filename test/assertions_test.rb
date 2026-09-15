@@ -25,4 +25,30 @@ class AssertionsTest < Minitest::Test
     assert_raises(Minitest::Assertion) { assert_pixel x, y, "#fff" }
     assert_raises(Minitest::Assertion) { assert_menu_items ["missing"] }
   end
+
+  def test_panel_and_decoration_assertions_use_rendered_instrumentation
+    session = zaniah_session(width: 320, height: 240, text: :none, timeout: 0.01) do |window|
+      InstrumentedUIApp.mount(window)
+    end
+
+    assert_panel_visible :problems, session: session
+    assert_panel_badge :problems, 3, session: session
+    assert_inline_overlay line: 10, text: ": String", session: session
+    assert_gutter_marker line: 5, kind: :breakpoint, session: session
+    assert_line_highlight line: 12, kind: :debug_position, session: session
+  end
+
+  def test_new_assertion_failures_report_available_instrumentation
+    session = zaniah_session(width: 320, height: 240, text: :none, timeout: 0.001) do |window|
+      InstrumentedUIApp.mount(window)
+    end
+
+    error = assert_raises(Minitest::Assertion) { assert_panel_badge :problems, 4, session: session }
+    assert_match(/syrma:panel:problems:badge="3" \(visible\)/, error.message)
+    error = assert_raises(Minitest::Assertion) do
+      assert_gutter_marker line: 6, kind: :breakpoint, session: session
+    end
+    assert_match(/syrma:decoration:gutter:5:breakpoint/, error.message)
+    assert_raises(ArgumentError) { assert_inline_overlay line: -1, text: "invalid", session: session }
+  end
 end

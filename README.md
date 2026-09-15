@@ -116,9 +116,21 @@ end
 | Window/input | `resize`, `close`, `drop_files`, `feed_terminal` |
 | Synchronize | `settle`, `wait_for`, `advance` |
 | Inspect | `tree`, `texts`, `at`, `pixel`, `screenshot`, `terminal_lines`, `menu`, `tooltip` |
-| Assert | Text, element, visibility, clickability, background, pixel, tooltip, menu, tree/terminal/image snapshots |
+| Assert | Text, element, visibility, panels, decorations, background, pixel, tooltip, menu, tree/terminal/image snapshots |
 
 Locators are lazy: every operation resolves them against the latest rendered frame. Actions wait for visibility and an unobscured matching event handler, then send events through `Window#input`.
+
+Panel and decoration assertions use rendered `test_id` instrumentation, so application code does not need a Syrma or Canopus runtime dependency:
+
+```ruby
+assert_panel_visible :problems
+assert_panel_badge :problems, 3
+assert_inline_overlay line: 10, text: ": String"
+assert_gutter_marker line: 5, kind: :breakpoint
+assert_line_highlight line: 12, kind: :debug_position
+```
+
+The corresponding IDs are `syrma:panel:problems`, `syrma:panel:problems:badge`, `syrma:decoration:inline:10`, `syrma:decoration:gutter:5:breakpoint`, and `syrma:decoration:line:12:debug_position`. Lines are zero-based. Instrument the element that was actually laid out and painted; assertions require positive visible bounds. RSpec provides the same names with `have_` in place of `assert_`.
 
 ## Snapshots and diagnostics
 

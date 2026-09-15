@@ -3,6 +3,7 @@
 require "syrma/rspec"
 require "tmpdir"
 require_relative "../test/fixtures/apps/counter_app"
+require_relative "../test/fixtures/apps/instrumented_ui_app"
 
 RSpec.describe "Syrma counter matchers", type: :zaniah do
   around do |example|
@@ -44,6 +45,27 @@ RSpec.describe "Syrma counter matchers", type: :zaniah do
     second = zaniah_session(width: 320, height: 240, timeout: 0.03) { |window| CounterApp.mount(window, overlay: true) }
     expect { expect(second.test_id("inc")).to be_clickable }
       .to raise_error(RSpec::Expectations::ExpectationNotMetError, /is covered by .*overlay/)
+  end
+end
+
+RSpec.describe "Syrma UI instrumentation matchers", type: :zaniah do
+  before do
+    zaniah_session(width: 320, height: 240, text: :none, timeout: 0.01) do |window|
+      InstrumentedUIApp.mount(window)
+    end
+  end
+
+  it "matches panels and decorations" do
+    expect(ui).to have_panel_visible(:problems)
+    expect(ui).to have_panel_badge(:problems, 3)
+    expect(ui).to have_inline_overlay(line: 10, text: ": String")
+    expect(ui).to have_gutter_marker(line: 5, kind: :breakpoint)
+    expect(ui).to have_line_highlight(line: 12, kind: :debug_position)
+  end
+
+  it "reports available instrumentation on mismatch" do
+    expect { expect(ui).to have_line_highlight(line: 13, kind: :debug_position) }
+      .to raise_error(RSpec::Expectations::ExpectationNotMetError, /syrma:decoration:line:12:debug_position/)
   end
 end
 
