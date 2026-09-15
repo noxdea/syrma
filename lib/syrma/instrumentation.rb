@@ -6,7 +6,7 @@ module Syrma
 
     module WindowCapture
       attr_reader :testing_root, :testing_clear, :testing_frame
-      attr_accessor :testing_lazy_raster
+      attr_accessor :testing_lazy_raster, :testing_reduce_motion
 
       def on_frame(&callback)
         @testing_on_frame = callback
@@ -29,8 +29,15 @@ module Syrma
         @testing_recorder = recorder
       end
 
-      def render(element, present: true, **options)
-        super(element, present: present && !testing_lazy_raster, **options)
+      def render(element, present: true, **options) = super(element, present: present && !testing_lazy_raster, **options)
+    end
+
+    module FrameContextCapture
+      def theme
+        current = super
+        return current unless window.respond_to?(:testing_reduce_motion) && window.testing_reduce_motion
+
+        current.with(motion: current.motion.with(reduced: true))
       end
     end
 
@@ -56,6 +63,7 @@ module Syrma
         return if @installed
 
         Zaniah::Platform.singleton_class.prepend(BackendOverride)
+        Zaniah::FrameContext.prepend(FrameContextCapture) if Zaniah::FrameContext.method_defined?(:theme)
         @installed = true
       end
 
@@ -69,9 +77,10 @@ module Syrma
         Thread.current[:syrma_window_capture] = previous
       end
 
-      def capture(window, lazy_raster:)
+      def capture(window, lazy_raster:, reduce_motion:)
         window.extend(WindowCapture) unless window.is_a?(WindowCapture)
         window.testing_lazy_raster = lazy_raster
+        window.testing_reduce_motion = reduce_motion
         window.on_frame
         window
       end

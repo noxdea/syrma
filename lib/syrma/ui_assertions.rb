@@ -7,11 +7,13 @@ module Syrma
 
     module_function
 
-    def panel_id(id, badge: false) = [PREFIX, "panel", id, badge ? "badge" : nil].compact.join(":")
+    def panel_id(id, badge: false) = [PREFIX, "panel", component(id, "panel id"), badge ? "badge" : nil].compact.join(":")
 
     def decoration_id(kind, line, type = nil)
       raise ArgumentError, "line must be a nonnegative integer" unless line.is_a?(Integer) && line >= 0
 
+      kind = component(kind, "decoration kind")
+      type = component(type, "decoration type") unless type.nil?
       [PREFIX, "decoration", kind, line, type].compact.join(":")
     end
 
@@ -35,5 +37,15 @@ module Syrma
     def text_match?(actual, expected)
       expected.is_a?(Regexp) ? expected.match?(actual) : actual == expected.to_s
     end
+
+    def component(value, label)
+      valid = value.is_a?(String) || value.is_a?(Symbol)
+      value = value.to_s
+      valid &&= !value.empty? && !value.include?(":") && !value.match?(/[\x00-\x1f\x7f]/)
+      raise ArgumentError, "#{label} must be a nonempty string or symbol without colons or control characters" unless valid
+
+      value
+    end
+    private_class_method :component
   end
 end

@@ -9,7 +9,7 @@ module Syrma
     def initialize(window, session)
       @window = window
       @session = session
-      Instrumentation.capture(window, lazy_raster: session.raster == :lazy)
+      Instrumentation.capture(window, lazy_raster: session.raster == :lazy, reduce_motion: session.virtual_clock?)
       @builder = SnapshotBuilder.new
     end
 
@@ -162,9 +162,19 @@ module Syrma
     def scroll_until(list, found:, step: 100, max: 50)
       target = find(**found)
       max.times do
-        return target if target.exists? && target.resolve_all.any?(&:visible?)
+        candidates = target.resolve_all
+        return target if candidates.any?(&:visible?)
 
-        scroll(list, dy: step)
+        container = resolve_node(list)
+        candidate = candidates.first
+        dy = if candidate && candidate.bounds.y >= container.visible_bounds.y + container.visible_bounds.height
+               candidate.bounds.y - container.visible_bounds.y - container.visible_bounds.height + 1
+             elsif candidate && candidate.bounds.y + candidate.bounds.height <= container.visible_bounds.y
+               candidate.bounds.y + candidate.bounds.height - container.visible_bounds.y - 1
+             else
+               step
+             end
+        scroll(list, dy: dy)
       end
       raise ElementNotFound.new(target, tree)
     end

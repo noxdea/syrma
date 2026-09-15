@@ -13,8 +13,11 @@ module InstrumentedUIApp
           .child(Z::Text.new("Problems"))
           .child(Z::Text.new("3").test_id("syrma:panel:problems:badge")))
         .child(source)
+        .child(Z::Div.new.h(4).w(4).test_id("syrma:decoration:gutter:0:breakpoint"))
         .child(Z::Div.new.h(4).w(4).test_id("syrma:decoration:gutter:5:breakpoint"))
         .child(Z::Div.new.h(20).w(120).test_id("syrma:decoration:line:12:debug_position"))
+        .child(Z::Div.new.w(0).h(0).overflow_hidden
+          .child(Z::Div.new.h(4).w(4).test_id("syrma:decoration:gutter:9:breakpoint")))
       root.child(inline) unless source.respond_to?(:inline_overlay)
       root
     end

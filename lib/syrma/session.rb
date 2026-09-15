@@ -68,6 +68,7 @@ module Syrma
 
     def driver = @drivers[@current]
     def session = self
+    def virtual_clock? = @clock.is_a?(Clock)
     def method_missing(name, ...) = driver.respond_to?(name) ? driver.public_send(name, ...) : super
     def respond_to_missing?(name, include_all = false) = driver.respond_to?(name, include_all) || super
 

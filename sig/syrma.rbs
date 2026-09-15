@@ -145,6 +145,7 @@ module Syrma
     def window: (?title: String?, ?index: Integer?) -> untyped
     def driver: () -> WindowDriver
     def session: () -> Session
+    def virtual_clock?: () -> bool
     def settle: () -> Session
     def advance: (Numeric seconds) -> Session
     def wait_for: (?untyped message, ?timeout: Numeric) { () -> untyped } -> untyped

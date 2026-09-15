@@ -59,13 +59,40 @@ RSpec.describe "Syrma UI instrumentation matchers", type: :zaniah do
     expect(ui).to have_panel_visible(:problems)
     expect(ui).to have_panel_badge(:problems, 3)
     expect(ui).to have_inline_overlay(line: 10, text: ": String")
+    expect(ui).to have_inline_overlay(line: 10, text: /String/)
+    expect(ui).to have_gutter_marker(line: 0, kind: "breakpoint")
     expect(ui).to have_gutter_marker(line: 5, kind: :breakpoint)
     expect(ui).to have_line_highlight(line: 12, kind: :debug_position)
+    expect(ui).not_to have_gutter_marker(line: 9, kind: :breakpoint)
   end
 
   it "reports available instrumentation on mismatch" do
     expect { expect(ui).to have_line_highlight(line: 13, kind: :debug_position) }
       .to raise_error(RSpec::Expectations::ExpectationNotMetError, /syrma:decoration:line:12:debug_position/)
+    expect { expect(ui).not_to have_panel_visible(:problems) }
+      .to raise_error(RSpec::Expectations::ExpectationNotMetError, /not to match.*syrma:panel:problems/)
+  end
+
+  it "waits for instrumentation to disappear" do
+    visible = true
+    window = nil
+    session = zaniah_session(width: 100, height: 60, text: :none, timeout: 0.2) do |current|
+      window = current
+      current.draw do
+        visible ? Zaniah::Div.new.w(20).h(20).test_id("syrma:panel:temporary") : Zaniah::Div.new
+      end
+    end
+    update = Thread.new do
+      sleep 0.02
+      visible = false
+      window.request_frame
+    end
+
+    begin
+      expect(session).not_to have_panel_visible(:temporary)
+    ensure
+      update.join
+    end
   end
 end
 

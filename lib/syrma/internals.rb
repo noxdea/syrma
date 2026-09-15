@@ -5,9 +5,9 @@ module Syrma
     module_function
 
     def style(element) = element.instance_variable_get(:@style) || {}
-    def background(element) = element.instance_variable_get(:@background)
-    def border_color(element) = element.instance_variable_get(:@border_color)
-    def radius(element) = element.instance_variable_get(:@radius)
+    def background(element) = paint_value(element, :background, :@background)
+    def border_color(element) = paint_value(element, :border_color, :@border_color)
+    def radius(element) = paint_value(element, :corner_radii, :@radius)
     def tooltip(element) = element.instance_variable_get(:@tooltip)
     def context_menu(element) = element.instance_variable_get(:@context_menu)
     def key(element) = element.instance_variable_get(:@key)
@@ -22,5 +22,11 @@ module Syrma
     end
 
     def executor_idle?(executor) = executor.instance_variable_get(:@foreground).empty?
+
+    def paint_value(element, property, legacy)
+      resolved = element.respond_to?(:resolved_style) ? element.resolved_style : nil
+      resolved&.[](property) || element.instance_variable_get(legacy) || style(element)[property]
+    end
+    private_class_method :paint_value
   end
 end

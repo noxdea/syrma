@@ -115,8 +115,16 @@ module Syrma
           @session = session
           RSpec.eventually(session) { UIAssertions.visible?(session, @test_id, text: @text) }
         end
+        match_when_negated do |session|
+          @test_id, @text, @expectation, @prefix = query.call(*args, **keywords)
+          @session = session
+          RSpec.eventually(session) { !UIAssertions.visible?(session, @test_id, text: @text) }
+        end
         failure_message do
           "Expected #{@expectation}; observed #{UIAssertions.describe(@session, @prefix)}"
+        end
+        failure_message_when_negated do
+          "Expected #{@expectation} not to match; observed #{UIAssertions.describe(@session, @prefix)}"
         end
       end
     end

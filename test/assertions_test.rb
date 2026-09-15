@@ -34,6 +34,8 @@ class AssertionsTest < Minitest::Test
     assert_panel_visible :problems, session: session
     assert_panel_badge :problems, 3, session: session
     assert_inline_overlay line: 10, text: ": String", session: session
+    assert_inline_overlay line: 10, text: /String/, session: session
+    assert_gutter_marker line: 0, kind: "breakpoint", session: session
     assert_gutter_marker line: 5, kind: :breakpoint, session: session
     assert_line_highlight line: 12, kind: :debug_position, session: session
   end
@@ -50,5 +52,25 @@ class AssertionsTest < Minitest::Test
     end
     assert_match(/syrma:decoration:gutter:5:breakpoint/, error.message)
     assert_raises(ArgumentError) { assert_inline_overlay line: -1, text: "invalid", session: session }
+    assert_raises(ArgumentError) { assert_panel_visible "problems:badge", session: session }
+    assert_raises(ArgumentError) { assert_gutter_marker line: 5, kind: "breakpoint:other", session: session }
+    assert_raises(ArgumentError) { assert_gutter_marker line: 5, kind: false, session: session }
+    assert_raises(Minitest::Assertion) { assert_inline_overlay line: 10, text: "String", session: session }
+    assert_raises(Minitest::Assertion) { assert_gutter_marker line: 9, kind: :breakpoint, session: session }
+  end
+
+  def test_assertions_resolve_the_latest_rendered_frame
+    visible = false
+    window = nil
+    session = zaniah_session(width: 100, height: 60, text: :none, timeout: 0.001) do |current|
+      window = current
+      current.draw do
+        visible ? Zaniah::Div.new.w(20).h(20).test_id("syrma:panel:live") : Zaniah::Div.new
+      end
+    end
+    visible = true
+    window.request_frame
+
+    assert_panel_visible :live, session: session
   end
 end
