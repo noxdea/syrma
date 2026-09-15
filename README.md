@@ -51,7 +51,7 @@ bundle install
 bundle exec syrma doctor
 ```
 
-Syrma requires Ruby 3.1 or later and installs Zaniah `~> 0.2.0` as a dependency. RSpec users can replace Minitest with RSpec in the test group.
+Syrma requires Ruby 3.1 or later and supports Zaniah `>= 0.2, < 0.6`. RSpec users can replace Minitest with RSpec in the test group.
 
 ## Quick start
 
