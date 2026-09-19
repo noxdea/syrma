@@ -39,6 +39,13 @@ class RecordingTest < Minitest::Test
     end
   end
 
+  def test_static_frames_share_one_buffer_and_accumulate_delay
+    result = @session.record(fps: 10) { |recording| recording.frame(count: 3) }
+
+    assert_equal 1, result.frames.length
+    assert_equal 300, result.frames.first.delay_ms
+  end
+
   private
 
   def run_script

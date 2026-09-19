@@ -44,6 +44,7 @@ module Syrma
       @random = Random.new(seed.nil? ? 0 : Integer(seed))
       @cast_only = cast_only
       @frames = []
+      @captures = 0
       @events = []
       @elapsed = 0.0
       @frame_remainder = 0.0
@@ -226,7 +227,8 @@ module Syrma
     end
 
     def capture
-      raise Error, "record exceeded max_frames=#{@max_frames}" if @cast_only ? @events.length >= @max_frames : @frames.length >= @max_frames
+      raise Error, "record exceeded max_frames=#{@max_frames}" if @captures >= @max_frames
+      @captures += 1
       if @cast_only
         collect_output
         return
@@ -242,7 +244,13 @@ module Syrma
         width = target_width; height = target_height
       end
       pixels = compose(pixels, width, height)
-      @frames << Frame.new(pixels.freeze, (1000.0 / @fps).round)
+      delay = (1000.0 / @fps).round
+      if (last = @frames.last) && last.rgba == pixels
+        # Keep one immutable buffer for a static interval; only its duration grows.
+        @frames[-1] = Frame.new(last.rgba, last.delay_ms + delay)
+      else
+        @frames << Frame.new(pixels.freeze, delay)
+      end
       collect_output
     end
 
