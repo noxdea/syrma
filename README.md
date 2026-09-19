@@ -24,6 +24,8 @@
 
 Syrma locates rendered elements, sends input through Zaniah's real event path, waits for redraws, and compares the observable result. Tests can inspect text, element trees, terminal output, pixels, screenshots, menus, and tooltips without bypassing application input handling.
 
+![Syrma deterministic recording](docs/media/overview.png)
+
 ## Features
 
 - Drive GUI and TUI sessions with pointer, keyboard, clipboard, composition, file-drop, resize, and terminal input
@@ -183,6 +185,7 @@ On Ruby 4.0 arm64 macOS, the included 101-element benchmark measured `event_fram
 ```sh
 bundle install
 bundle exec rake
+bundle exec rake demo
 bundle exec ruby -Ilib:test script/test_gesture.rb
 bundle exec rbs -I sig validate
 gem build --strict syrma.gemspec

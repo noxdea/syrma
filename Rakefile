@@ -13,4 +13,9 @@ end
 RSpec::Core::RakeTask.new(:spec) { |spec| spec.rspec_opts = ["-Ilib"] }
 Syrma::RakeTask.new
 
+desc "Regenerate deterministic demo media"
+task :demo do
+  Dir["demo/*.rb"].sort.each { |path| ruby "-Ilib", path }
+end
+
 task default: %i[test spec]
