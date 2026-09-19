@@ -2,6 +2,29 @@
 
 module Syrma
   class Recording
+    FONT = {
+      "A" => %w[01110 10001 10001 11111 10001 10001 10001], "B" => %w[11110 10001 10001 11110 10001 10001 11110],
+      "C" => %w[01111 10000 10000 10000 10000 10000 01111], "D" => %w[11110 10001 10001 10001 10001 10001 11110],
+      "E" => %w[11111 10000 10000 11110 10000 10000 11111], "F" => %w[11111 10000 10000 11110 10000 10000 10000],
+      "G" => %w[01111 10000 10000 10111 10001 10001 01111], "H" => %w[10001 10001 10001 11111 10001 10001 10001],
+      "I" => %w[11111 00100 00100 00100 00100 00100 11111], "J" => %w[00111 00010 00010 00010 10010 10010 01100],
+      "K" => %w[10001 10010 10100 11000 10100 10010 10001], "L" => %w[10000 10000 10000 10000 10000 10000 11111],
+      "M" => %w[10001 11011 10101 10101 10001 10001 10001], "N" => %w[10001 11001 10101 10011 10001 10001 10001],
+      "O" => %w[01110 10001 10001 10001 10001 10001 01110], "P" => %w[11110 10001 10001 11110 10000 10000 10000],
+      "Q" => %w[01110 10001 10001 10001 10101 10010 01101], "R" => %w[11110 10001 10001 11110 10100 10010 10001],
+      "S" => %w[01111 10000 10000 01110 00001 00001 11110], "T" => %w[11111 00100 00100 00100 00100 00100 00100],
+      "U" => %w[10001 10001 10001 10001 10001 10001 01110], "V" => %w[10001 10001 10001 10001 10001 01010 00100],
+      "W" => %w[10001 10001 10001 10101 10101 11011 10001], "X" => %w[10001 10001 01010 00100 01010 10001 10001],
+      "Y" => %w[10001 10001 01010 00100 00100 00100 00100], "Z" => %w[11111 00001 00010 00100 01000 10000 11111],
+      "0" => %w[01110 10001 10011 10101 11001 10001 01110], "1" => %w[00100 01100 00100 00100 00100 00100 01110],
+      "2" => %w[01110 10001 00001 00010 00100 01000 11111], "3" => %w[11110 00001 00001 01110 00001 00001 11110],
+      "4" => %w[00010 00110 01010 10010 11111 00010 00010], "5" => %w[11111 10000 10000 11110 00001 00001 11110],
+      "6" => %w[01110 10000 10000 11110 10001 10001 01110], "7" => %w[11111 00001 00010 00100 01000 01000 01000],
+      "8" => %w[01110 10001 10001 01110 10001 10001 01110], "9" => %w[01110 10001 10001 01111 00001 00001 01110],
+      "." => %w[00000 00000 00000 00000 00000 00110 00110], "-" => %w[00000 00000 00000 01110 00000 00000 00000],
+      ":" => %w[00000 00110 00110 00000 00110 00110 00000], "/" => %w[00001 00010 00010 00100 01000 01000 10000]
+    }.freeze
+
     Cast = Data.define(:width, :height, :events)
     Result = Data.define(:animation, :cast, :frames, :duration_ms) do
       def write_apng(path, **options)
@@ -316,9 +339,12 @@ module Syrma
       rect(output, width, height, @cursor[0], @cursor[1], 2, 2, [255, 255, 255, 255]) if @cursor_visible
       if @keycaps_visible && @keycap && @elapsed < @keycap_until
         rect(output, width, height, 12, height - 42, [@keycap.to_s.length * 8 + 20, 28].max, 28, [30, 30, 30, 220])
+        draw_text(output, width, height, @keycap.to_s, 20, height - 35, [255, 255, 255, 255], scale: 2)
       end
       if @caption_text && @elapsed < @caption_until
-        rect(output, width, height, 0, @caption_position == :top ? 0 : height - 48, width, 48, [0, 0, 0, 190])
+        y = @caption_position == :top ? 0 : height - 48
+        rect(output, width, height, 0, y, width, 48, [0, 0, 0, 190])
+        draw_text(output, width, height, @caption_text, 12, y + 16, [255, 255, 255, 255], scale: 1)
       end
       output
     end
@@ -344,6 +370,21 @@ module Syrma
       x = x.to_i; y = y.to_i; rect_width = rect_width.to_i; rect_height = rect_height.to_i
       y0 = [y, 0].max; y1 = [y + rect_height, height].min; x0 = [x, 0].max; x1 = [x + rect_width, width].min
       (y0...y1).each { |row| (x0...x1).each { |column| pixels[(row * width + column) * 4, 4] = color.pack("C4") } }
+    end
+
+    def draw_text(pixels, width, height, text, x, y, color, scale: 1)
+      text.to_s.upcase.each_char do |character|
+        glyph = FONT[character] || Array.new(7, "10001")
+        glyph.each_with_index do |row, row_index|
+          row.each_char.with_index do |value, column|
+            next unless value == "1"
+
+            rect(pixels, width, height, x + column * scale, y + row_index * scale, scale, scale, color)
+          end
+        end
+        x += 6 * scale
+        break if x >= width
+      end
     end
   end
 end
