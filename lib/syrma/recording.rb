@@ -46,6 +46,7 @@ module Syrma
       @frames = []
       @events = []
       @elapsed = 0.0
+      @frame_remainder = 0.0
       @cursor_visible = chrome.fetch(:cursor, false)
       @keycaps_visible = chrome.fetch(:keycaps, false)
       @cursor_style = :arrow
@@ -64,10 +65,12 @@ module Syrma
       seconds = Float(seconds)
       raise ArgumentError, "time cannot be negative" if seconds.negative?
 
-      ticks = (seconds * @fps).floor
-      ticks.times do
-        session.advance(1.0 / @fps)
-        @elapsed += 1.0 / @fps
+      session.advance(seconds) if seconds.positive?
+      @elapsed += seconds
+      @frame_remainder += seconds
+      interval = 1.0 / @fps
+      while @frame_remainder >= interval
+        @frame_remainder -= interval
         capture
       end
       self
