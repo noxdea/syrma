@@ -91,16 +91,21 @@ module Syrma
       seconds = Float(seconds)
       raise ArgumentError, "time cannot be negative" if seconds.negative?
 
-      session.advance(seconds) if seconds.positive?
-      @elapsed += seconds
-      @frame_remainder += seconds
       interval = 1.0 / @fps
-      while @frame_remainder >= interval
-        @frame_remainder -= interval
-        @capture_elapsed = @elapsed - @frame_remainder
+      remaining = seconds
+      while remaining.positive? && @frame_remainder + remaining >= interval
+        step = interval - @frame_remainder
+        session.advance(step)
+        @elapsed += step
+        remaining -= step
+        @frame_remainder = 0.0
         capture
       end
-      @capture_elapsed = nil
+      if remaining.positive?
+        session.advance(remaining)
+        @elapsed += remaining
+        @frame_remainder += remaining
+      end
       self
     end
 
@@ -324,10 +329,9 @@ module Syrma
     end
 
     def compose(pixels, width, height)
-      now = @capture_elapsed || @elapsed
-      pixels = zoom_pixels(pixels, width, height) if @zoom && now < @zoom_until
+      pixels = zoom_pixels(pixels, width, height) if @zoom && @elapsed < @zoom_until
       output = pixels.dup
-      if @highlight_bounds && now < @highlight_until
+      if @highlight_bounds && @elapsed < @highlight_until
         x, y, w, h = @highlight_bounds
         height.times do |row|
           width.times do |column|
@@ -340,11 +344,11 @@ module Syrma
         rect(output, width, height, x, y, w, h, [255, 192, 0, 255])
       end
       rect(output, width, height, @cursor[0], @cursor[1], 2, 2, [255, 255, 255, 255, 255]) if @cursor_visible
-      if @keycaps_visible && @keycap && now < @keycap_until
+      if @keycaps_visible && @keycap && @elapsed < @keycap_until
         rect(output, width, height, 12, height - 42, [@keycap.to_s.length * 8 + 20, 28].max, 28, [30, 30, 30, 220])
         draw_text(output, width, height, @keycap.to_s, 20, height - 35, [255, 255, 255, 255], scale: 2)
       end
-      if @caption_text && now < @caption_until
+      if @caption_text && @elapsed < @caption_until
         y = @caption_position == :top ? 0 : height - 48
         rect(output, width, height, 0, y, width, 48, [0, 0, 0, 190])
         draw_text(output, width, height, @caption_text, 12, y + 16, [255, 255, 255, 255], scale: 1)
