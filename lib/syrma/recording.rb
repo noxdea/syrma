@@ -57,6 +57,8 @@ module Syrma
       @caption_until = 0.0
       @highlight_bounds = nil
       @highlight_until = 0.0
+      @zoom = nil
+      @zoom_until = 0.0
       @last_output = ""
       @events << event(0.0, :resize, "#{terminal_dimensions[0]}x#{terminal_dimensions[1]}") if @cast_only
     end
@@ -93,7 +95,7 @@ module Syrma
       text.each_grapheme_cluster do |character|
         session.driver.type(character)
         @keycap = character
-        @keycap_until = @elapsed + 1.2
+        @keycap_until = @elapsed + (@keycap_duration || 1.2)
         advance((1.0 / cps) * (1.0 + (@random.rand * 2.0 - 1.0) * jitter))
       end
       self
@@ -103,7 +105,7 @@ module Syrma
       keystrokes.each do |keystroke|
         session.driver.press(keystroke)
         @keycap = keystroke.to_s
-        @keycap_until = @elapsed + 1.2
+        @keycap_until = @elapsed + (@keycap_duration || 1.2)
         advance(hold)
         advance(gap)
       end
@@ -169,9 +171,12 @@ module Syrma
     end
 
     def zoom(_target, scale: 2.0, duration: 0.6)
-      raise ArgumentError, "zoom scale must be positive" unless Float(scale).positive?
-
-      # Kept as a no-op until the pixel-space crop can preserve the full canvas.
+      factor = Float(scale)
+      raise ArgumentError, "zoom scale must be positive" unless factor.positive?
+      node = _target.respond_to?(:resolve) ? _target.resolve : _target
+      bounds = node.respond_to?(:bounds) ? node.bounds : node
+      @zoom = [bounds.x + bounds.width / 2.0, bounds.y + bounds.height / 2.0, factor]
+      @zoom_until = @elapsed + Float(duration)
       advance(duration)
       self
     end
@@ -286,6 +291,7 @@ module Syrma
     end
 
     def compose(pixels, width, height)
+      pixels = zoom_pixels(pixels, width, height) if @zoom && @elapsed < @zoom_until
       output = pixels.dup
       if @highlight_bounds && @elapsed < @highlight_until
         x, y, w, h = @highlight_bounds
@@ -305,6 +311,23 @@ module Syrma
       end
       if @caption_text && @elapsed < @caption_until
         rect(output, width, height, 0, @caption_position == :top ? 0 : height - 48, width, 48, [0, 0, 0, 190])
+      end
+      output
+    end
+
+    def zoom_pixels(pixels, width, height)
+      center_x, center_y, factor = @zoom
+      output = String.new(capacity: pixels.bytesize, encoding: Encoding::BINARY)
+      height.times do |row|
+        source_y = (center_y + (row - height / 2.0) / factor).round
+        width.times do |column|
+          source_x = (center_x + (column - width / 2.0) / factor).round
+          output << if source_x.between?(0, width - 1) && source_y.between?(0, height - 1)
+            pixels.byteslice((source_y * width + source_x) * 4, 4)
+          else
+            "\0\0\0\0".b
+          end
+        end
       end
       output
     end
