@@ -32,6 +32,7 @@ Syrma locates rendered elements, sends input through Zaniah's real event path, w
 - Keep timing deterministic with a session-scoped virtual clock and explicit frame settling
 - Test with Minitest assertions or RSpec matchers
 - Capture screenshots, hit regions, text runs, and recent events when a test fails
+- Record deterministic APNG/GIF frames and asciinema events from the virtual clock
 
 ## Installation
 
@@ -52,6 +53,23 @@ bundle exec syrma doctor
 ```
 
 Syrma requires Ruby 3.1 or later and supports Zaniah `>= 0.2, < 0.6`. RSpec users can replace Minitest with RSpec in the test group.
+
+### Demo recording
+
+Install `wezen` alongside Syrma to export a virtual-clock recording:
+
+```ruby
+result = session.record(fps: 12, seed: 42) do |recording|
+  recording.cursor
+  recording.caption("Open the file")
+  recording.type_humanly("README.md")
+  recording.pause(1.0)
+end
+result.write_apng("docs/media/overview.apng")
+```
+
+Recordings require a virtual clock and headless session for repeatable pixels.
+Use `session.record_cast` with a TUI session for asciinema v2 output.
 
 ## Quick start
 

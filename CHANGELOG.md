@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add deterministic virtual-clock demo recording with humanized input, pixel-space chrome, and Wezen output hooks.
+
 ## 0.2.0 - 2026-09-15
 
 - Add Minitest assertions and RSpec matchers for instrumented panels and editor decorations.

@@ -69,6 +69,24 @@ module Syrma
     def driver = @drivers[@current]
     def session = self
     def virtual_clock? = @clock.is_a?(Clock)
+    def record(fps: 12, scale: 1.0, max_frames: 600, seed: nil, chrome: {}, &block)
+      raise Error, "record requires a virtual clock" unless virtual_clock?
+      raise ArgumentError, "record requires a block" unless block
+
+      recording = Recording.new(self, fps: fps, scale: scale, max_frames: max_frames, seed: seed, chrome: chrome)
+      block.call(recording)
+      recording.result
+    end
+
+    def record_cast(fps: 12, seed: nil, max_frames: 600, &block)
+      raise UnsupportedBackend, "record_cast is only available for TUI sessions" unless tui?
+      raise Error, "record_cast requires a virtual clock" unless virtual_clock?
+      raise ArgumentError, "record_cast requires a block" unless block
+
+      recording = Recording.new(self, fps: fps, scale: 1.0, max_frames: max_frames, seed: seed, cast_only: true)
+      block.call(recording)
+      recording.result
+    end
     def method_missing(name, ...) = driver.respond_to?(name) ? driver.public_send(name, ...) : super
     def respond_to_missing?(name, include_all = false) = driver.respond_to?(name, include_all) || super
 
