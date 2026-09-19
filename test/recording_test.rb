@@ -46,6 +46,20 @@ class RecordingTest < Minitest::Test
     assert_equal 300, result.frames.first.delay_ms
   end
 
+  def test_zoom_is_visible_while_its_duration_is_active
+    plain = Syrma::Session.new(width: 80, height: 40, text: :none) { |window| CounterApp.mount(window) }
+    zoomed = Syrma::Session.new(width: 80, height: 40, text: :none) { |window| CounterApp.mount(window) }
+    plain_result = plain.record(fps: 10) { |recording| recording.frame }
+    zoomed_result = zoomed.record(fps: 10) do |recording|
+      recording.zoom(Zaniah::Bounds.new(40, 20, 20, 20), scale: 2, duration: 0.2)
+    end
+
+    refute_equal plain_result.frames.map(&:rgba), zoomed_result.frames.map(&:rgba)
+  ensure
+    plain&.close
+    zoomed&.close
+  end
+
   private
 
   def run_script
