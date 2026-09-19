@@ -71,6 +71,7 @@ module Syrma
     def virtual_clock? = @clock.is_a?(Clock)
     def record(fps: 12, scale: 1.0, max_frames: 600, seed: nil, chrome: {}, &block)
       raise Error, "record requires a virtual clock" unless virtual_clock?
+      raise Error, "record requires a headless backend" unless @backend == :headless
       raise ArgumentError, "record requires a block" unless block
 
       recording = Recording.new(self, fps: fps, scale: scale, max_frames: max_frames, seed: seed, chrome: chrome)

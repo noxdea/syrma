@@ -26,6 +26,13 @@ class RecordingTest < Minitest::Test
     real&.close
   end
 
+  def test_record_rejects_tui_backend
+    tui = Syrma::Session.new(backend: :tui, width: 20, height: 20) { |window| window.draw { Zaniah::Text.new("TUI") } }
+    assert_raises(Syrma::Error) { tui.record { |recording| recording.frame } }
+  ensure
+    tui&.close
+  end
+
   def test_max_frames_is_enforced
     assert_raises(Syrma::Error) do
       @session.record(max_frames: 1) { |recording| recording.frame(count: 2) }
