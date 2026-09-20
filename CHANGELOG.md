@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 - 2026-09-20
 
 - Add deterministic virtual-clock demo recording with humanized input, pixel-space chrome, and Wezen output hooks.
 
