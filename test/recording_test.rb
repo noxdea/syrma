@@ -33,6 +33,18 @@ class RecordingTest < Minitest::Test
     tui&.close
   end
 
+  def test_record_cast_emits_asciinema_events
+    require "wezen"
+    tui = Syrma::Session.new(backend: :tui, width: 20, height: 4) { |window| window.draw { Zaniah::Text.new("TUI") } }
+    result = tui.record_cast(fps: 10, seed: 42) { |recording| recording.frame; recording.pause(0.2) }
+
+    assert_equal ["resize", "output"], result.cast.events.map { |event| event.kind.to_s }.uniq
+    assert_equal 200, result.duration_ms
+    assert_operator Wezen::Cast.encode(width: result.cast.width, height: result.cast.height, events: result.cast.events).bytesize, :<, 100_000
+  ensure
+    tui&.close
+  end
+
   def test_max_frames_is_enforced
     assert_raises(Syrma::Error) do
       @session.record(max_frames: 1) { |recording| recording.frame(count: 2) }
