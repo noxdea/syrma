@@ -60,6 +60,16 @@ class RecordingTest < Minitest::Test
     zoomed&.close
   end
 
+  def test_chrome_does_not_change_the_application_tree
+    before = @session.tree
+    @session.record(fps: 10, seed: 42, chrome: {cursor: true, keycaps: true}) do |recording|
+      recording.caption("demo")
+      recording.frame
+    end
+
+    assert_equal before, @session.tree
+  end
+
   private
 
   def run_script

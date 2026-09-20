@@ -21,7 +21,7 @@ module SyrmaDemo
 
   def run
     FileUtils.mkdir_p("docs/media")
-    session = Syrma::Session.new(width: 640, height: 360, text: :deterministic) { |window| mount(window) }
+    session = Syrma::Session.new(width: 640, height: 360, text: :deterministic, fonts: []) { |window| mount(window) }
     result = session.record(fps: 12, seed: 42, chrome: {cursor: true, keycaps: true}) do |recording|
       recording.frame
       recording.caption("Drive the UI through the real event path")
