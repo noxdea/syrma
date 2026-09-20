@@ -214,6 +214,10 @@ module Syrma
 
     def result
       animation = wezen_available? ? build_animation : nil
+      last_event_time = @events.last&.respond_to?(:time) ? @events.last.time : @events.last&.first
+      if @cast_only && last_event_time && last_event_time.to_f < @elapsed
+        @events << event(@elapsed, :output, "")
+      end
       cast = @cast_only ? Cast.new(terminal_dimensions[0], terminal_dimensions[1], @events.freeze) : @events.freeze
       Result.new(animation, cast, @frames.freeze, (@elapsed * 1000).round)
     end

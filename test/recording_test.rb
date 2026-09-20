@@ -40,6 +40,7 @@ class RecordingTest < Minitest::Test
 
     assert_equal ["resize", "output"], result.cast.events.map { |event| event.kind.to_s }.uniq
     assert_equal 200, result.duration_ms
+    assert_equal 0.2, result.cast.events.last.time
     assert_operator Wezen::Cast.encode(width: result.cast.width, height: result.cast.height, events: result.cast.events).bytesize, :<, 100_000
   ensure
     tui&.close
