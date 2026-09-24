@@ -40,7 +40,7 @@ module Syrma
       checks = {
         "Ruby" => "#{RUBY_VERSION} (#{RUBY_PLATFORM})",
         "zaniah" => Zaniah::VERSION,
-        "Bundled font" => File.file?(Internals.bundled_font_path) ? Internals.bundled_font_path : nil,
+        "Bundled font" => File.file?(Zaniah.bundled_font_path) ? Zaniah.bundled_font_path : nil,
         "YJIT" => defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled? ? "enabled" : "disabled",
         "External encoding" => Encoding.default_external.name
       }

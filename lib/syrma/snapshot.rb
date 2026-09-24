@@ -14,10 +14,11 @@ module Syrma
     def inspect = "#<#{type}#{test_id && " @#{test_id}"}#{text && " #{text.inspect}"} #{path.join('.')}>"
   end
 
-  Tree = Data.define(:frame, :size, :root, :nodes, :hits, :text_runs, :menu, :menu_index, :tooltip) do
+  Tree = Data.define(:frame, :size, :root, :nodes, :hits, :text_runs, :menu, :menu_index, :tooltip, :hit_regions) do
     def hit_at(point, event: :mouse_down, button: :left)
-      hits.reverse_each do |bounds, node|
-        next unless bounds.contains?(point)
+      hits.length.times.reverse_each do |index|
+        _bounds, node = hits[index]
+        next unless hit_regions[index].contains?(point)
 
         return node if node.nil? || Tree.handles?(node, event, button)
       end
@@ -27,7 +28,7 @@ module Syrma
     def self.handles?(node, event, button)
       case event
       when :mouse_down
-        (button == :right && Internals.context_menu(node.element)) ||
+        (button == :right && node.element.respond_to?(:context_menu_items) && node.element.context_menu_items) ||
           (node.handlers & %i[mouse_down click drag]).any?
       when :mouse_move then node.handlers.include?(:hover) || node.tooltip
       when :mouse_up then node.handlers.include?(:mouse_up)
@@ -38,40 +39,43 @@ module Syrma
 
   class SnapshotBuilder
     def build(window)
+      snapshot = Zaniah::Inspection.snapshot(window)
       by_element = {}.compare_by_identity
       nodes = []
       viewport = Zaniah::Bounds.new(0, 0, window.content_size.width, window.content_size.height)
-      root = window.testing_root && visit(window.testing_root, viewport, [0], nodes, by_element)
-      hits = window.dispatcher.hits.map { |hit| [hit.bounds, hit.owner && by_element[hit.owner]] }
-      popup = window.popup
-      Tree.new(frame: window.testing_frame, size: window.content_size, root: root,
-               nodes: nodes.freeze, hits: hits.freeze, text_runs: window.text_runs.map(&:dup).freeze,
+      root = snapshot.root && visit(snapshot.root, viewport, [0], nodes, by_element)
+      hits = snapshot.hits.map { |hit| [hit.bounds, hit.owner && by_element[hit.owner]] }
+      popup = snapshot.overlays.popup
+      tooltip = snapshot.overlays.tooltip
+      Tree.new(frame: snapshot.frame.number, size: window.content_size, root: root,
+               nodes: nodes.freeze, hits: hits.freeze, hit_regions: snapshot.hits, text_runs: snapshot.text_runs,
                menu: popup&.labels, menu_index: popup&.selected_index,
-               tooltip: Internals.shown_tooltip(window))
+               tooltip: tooltip && tooltip[:shown] ? tooltip[:text] : nil)
     end
 
     private
 
-    def visit(element, clip, path, nodes, by_element)
-      bounds = element.layout_node&.bounds or return nil
-      style = Internals.style(element)
+    def visit(entry, clip, path, nodes, by_element)
+      bounds = entry.bounds or return nil
+      style = entry.style
       return nil if style[:display] == :none
 
       visible = bounds.intersect(clip)
       child_clip = style[:overflow] == :visible ? clip : visible
       index = nodes.length
       nodes << nil
-      children = element.children.each_with_index.filter_map do |child, child_index|
+      children = entry.children.each_with_index.filter_map do |child, child_index|
         visit(child, child_clip, path + [child_index], nodes, by_element)
       end
+      element = entry.element
       node = Node.new(
-        path: path.freeze, element: element, type: element.class.name.split("::").last.downcase.to_sym,
-        test_id: element.test_id, key: Internals.key(element),
+        path: path.freeze, element: element, type: entry.type.split("::").last.downcase.to_sym,
+        test_id: entry.test_id, key: entry.key,
         text: text_attr(element, :text), color: text_attr(element, :text_color),
         font_size: text_attr(element, :font_size), bounds: bounds, visible_bounds: visible,
-        background: Internals.background(element), border_color: Internals.border_color(element),
-        radius: Internals.radius(element), handlers: element.handlers,
-        tooltip: Internals.tooltip(element), children: children.freeze
+        background: style[:background], border_color: style[:border_color],
+        radius: style[:corner_radii], handlers: entry.handlers,
+        tooltip: entry.tooltip, children: children.freeze
       )
       nodes[index] = node
       by_element[element] = node

@@ -50,7 +50,7 @@ module Syrma
       @outputs = {}
       @windows = attached_windows || [open_window(backend, width, height, window_options, keymap)]
       @drivers = @windows.map { |window| prepare(window, backend, text, fonts) }
-      @font_paths = text == :deterministic ? [Internals.bundled_font_path, *fonts.map { |font| File.expand_path(font) }] : []
+      @font_paths = text == :deterministic ? [Zaniah.bundled_font_path, *fonts.map { |font| File.expand_path(font) }] : []
       @current = 0
       mount&.call(window)
       settle
@@ -102,7 +102,7 @@ module Syrma
           candidate.tick
           busy = true
         end
-        return self unless busy || (@app && !Internals.executor_idle?(@app.executor))
+        return self unless busy || (@app && !@app.executor.idle?)
       end
       raise UnstableUI, "UI did not stabilize within #{@max_frames} frames (continuous animation?)"
     end

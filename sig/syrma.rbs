@@ -78,6 +78,7 @@ module Syrma
     attr_reader root: Node?
     attr_reader nodes: Array[Node]
     attr_reader hits: Array[untyped]
+    attr_reader hit_regions: Array[untyped]
     attr_reader text_runs: Array[untyped]
     attr_reader menu: Array[String]?
     attr_reader menu_index: Integer?
@@ -200,6 +201,7 @@ module Syrma
     def text: (String | Regexp value) -> Locator
     def texts: () -> Array[String]
     def tooltip: () -> String?
+    def accessibility: (?role: Symbol?, ?label: String | Regexp | nil, ?states: Hash[Symbol, untyped]) -> Array[[untyped, Array[Integer]]]
     def button: (String label) -> Locator
     def at: (untyped x, ?untyped y, ?event: Symbol, ?button: Symbol) -> Node?
     def pixel: (Integer x, Integer y) -> Array[Integer]

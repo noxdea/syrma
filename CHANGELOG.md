@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 - 2026-09-24
+
+- Support Zaniah 0.7 inspection snapshots and semantic accessibility queries.
+- Use Zaniah's public font, executor, and frame APIs instead of internal instrumentation.
+
 ## 0.3.0 - 2026-09-20
 
 - Add deterministic virtual-clock demo recording with humanized input, pixel-space chrome, and Wezen output hooks.

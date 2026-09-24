@@ -54,7 +54,7 @@ bundle install
 bundle exec syrma doctor
 ```
 
-Syrma requires Ruby 3.1 or later and supports Zaniah `>= 0.2, < 0.6`. RSpec users can replace Minitest with RSpec in the test group.
+Syrma requires Ruby 3.1 or later and supports Zaniah `>= 0.7, < 1.0`. RSpec users can replace Minitest with RSpec in the test group.
 
 ### Demo recording
 
@@ -135,10 +135,12 @@ end
 | Keyboard/text | `press`, `type`, `paste`, `compose`, `commit` |
 | Window/input | `resize`, `close`, `drop_files`, `feed_terminal` |
 | Synchronize | `settle`, `wait_for`, `advance` |
-| Inspect | `tree`, `texts`, `at`, `pixel`, `screenshot`, `terminal_lines`, `menu`, `tooltip` |
+| Inspect | `tree`, `texts`, `at`, `accessibility`, `pixel`, `screenshot`, `terminal_lines`, `menu`, `tooltip` |
 | Assert | Text, element, visibility, panels, decorations, background, pixel, tooltip, menu, tree/terminal/image snapshots |
 
 Locators are lazy: every operation resolves them against the latest rendered frame. Actions wait for visibility and an unobscured matching event handler, then send events through `Window#input`.
+
+`ui.accessibility(role: :button, label: "Save")` searches Zaniah's semantic tree and returns `[node, path]` pairs. Unlike visual locators, semantic nodes need not correspond to a rendered element or have bounds; use `ui.find` for pointer actions.
 
 Panel and decoration assertions use rendered `test_id` instrumentation, so application code does not need a Syrma or Canopus runtime dependency:
 

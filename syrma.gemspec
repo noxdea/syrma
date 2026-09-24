@@ -23,6 +23,6 @@ Gem::Specification.new do |spec|
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}).map { |path| File.basename(path) }
   spec.require_paths = ["lib"]
-  spec.add_dependency "zaniah", ">= 0.2", "< 0.6"
+  spec.add_dependency "zaniah", ">= 0.7", "< 1.0"
   spec.add_dependency "wezen", ">= 0.1", "< 0.2"
 end

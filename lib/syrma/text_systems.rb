@@ -9,7 +9,7 @@ module Syrma
       when :none, nil then nil
       when :native then Zaniah::TextSystem::Renderer.new
       when :deterministic
-        paths = [Internals.bundled_font_path, *fonts.map { |font| File.expand_path(font) }]
+        paths = [Zaniah.bundled_font_path, *fonts.map { |font| File.expand_path(font) }]
         missing = paths.reject { |path| File.file?(path) }
         raise ArgumentError, "Fonts not found: #{missing.join(', ')}" unless missing.empty?
 

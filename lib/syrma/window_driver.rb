@@ -17,7 +17,7 @@ module Syrma
 
     def tree
       session.settle
-      @tree = nil if @tree && @tree.frame != window.testing_frame
+      @tree = nil if @tree && @tree.frame != window.frame_number
       @tree ||= @builder.build(window)
     end
 
@@ -27,6 +27,10 @@ module Syrma
     def text(value) = find(text: value)
     def texts = tree.text_runs.map { |run| run[2] }
     def tooltip = tree.tooltip
+    def accessibility(role: nil, label: nil, states: {})
+      session.settle
+      Zaniah::Inspection.snapshot(window).accessibility.query(role: role, label: label, states: states)
+    end
 
     def button(label)
       find(clickable: true) do |node|
@@ -182,7 +186,7 @@ module Syrma
     def menu = (@menu_driver ||= PopupDriver.new(self))
 
     def dispatch(event)
-      session.event_log.add(window.testing_frame, window.title, event)
+      session.event_log.add(window.frame_number, window.title, event)
       window.input(event)
       session.settle unless @in_gesture && session.event_frames == :gesture
       event
